@@ -2,23 +2,24 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:main/screens/Signup.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class Signup extends StatefulWidget {
+  const Signup({super.key});
 
   @override
-  State<LoginScreen> createState () => _LoginScreen();
+  State<Signup> createState () => _Signup();
 }
 
-class _LoginScreen extends State<LoginScreen> {
+class _Signup extends State<Signup> {
 
   TextEditingController username = TextEditingController();
+  TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Login Page"),
+        title: Text("Signup Page"),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -33,12 +34,12 @@ class _LoginScreen extends State<LoginScreen> {
                 height: 130,
               ),
               SizedBox(height: 15,),
-              Text("Welcome Back!" , style: TextStyle(
+              Text("Create an Account" , style: TextStyle(
                 fontSize: 40,
                 fontWeight: FontWeight.bold,
               ),),
               SizedBox(height: 15,),
-              Text("Use Credentials to access your account" , style: TextStyle(
+              Text("Please fill this detail to create an account" , style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
               ),),
@@ -53,6 +54,15 @@ class _LoginScreen extends State<LoginScreen> {
               ),
               SizedBox(height: 15,),
               TextField(
+                controller: email,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: "Enter Your Email",
+                  prefixIcon: Icon(Icons.email),
+                ),
+              ),
+              SizedBox(height: 15,),
+              TextField(
                 controller: password,
                 obscureText: true,
                 decoration: InputDecoration(
@@ -61,16 +71,6 @@ class _LoginScreen extends State<LoginScreen> {
                   prefixIcon: Icon(Icons.lock),
                   suffixIcon: Icon(Icons.visibility_off),
                 ),
-              ),
-              SizedBox(height: 15,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text("Forgot Password?", style: TextStyle(
-                    color: Colors.deepPurpleAccent,
-                    fontSize: 18,
-                  ),)
-                ],
               ),
               SizedBox(height: 15,),
               SizedBox(
@@ -84,13 +84,12 @@ class _LoginScreen extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Text("Log in", style: TextStyle(
+                  child: Text("Sign up", style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                   ),),
                 ),
               ),
-              SizedBox(height: 10,),
               Row(
                 children: [
                   Expanded(
@@ -114,35 +113,22 @@ class _LoginScreen extends State<LoginScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 10,),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: Image.network(
-                    'https://www.google.com/favicon.ico',
-                    width: 24,
-                    height: 24,
-                  ),
-                  label: Text(
-                    "Sign in with Google",
-                    style: TextStyle(fontSize: 18),
-                  ),
+                child: OutlinedButton(
+                  onPressed: (){},
+                  child: Text("Sing in with Google" , style: TextStyle(
+                    fontSize: 18,
+                  ),),
                 ),
               ),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: Image.network(
-                    'https://www.facebook.com/favicon.ico',
-                    width: 24,
-                    height: 24,
-                  ),
-                  label: Text(
-                    "Sign in with Facebook",
-                    style: TextStyle(fontSize: 18),
-                  ),
+                child: OutlinedButton(
+                  onPressed: (){},
+                  child: Text("Sing in with Facebook" , style: TextStyle(
+                    fontSize: 18,
+                  ),),
                 ),
               ),
               SizedBox(
@@ -151,24 +137,21 @@ class _LoginScreen extends State<LoginScreen> {
                   onPressed: () {},
                   child: RichText(
                     text: TextSpan(
-                      text: "Don't have an account? ",
+                      text: "Already have an account? ",
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 16,
                       ),
                       children: [
                         TextSpan(
-                          text: "Signup",
+                          text: "Login",
                           style: TextStyle(
                             color: Colors.deepPurpleAccent,
                             fontWeight: FontWeight.bold,
                           ),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder:(context)=> Signup()),
-                              );
+                              Navigator.pop(context);
                             },
                         ),
                       ],

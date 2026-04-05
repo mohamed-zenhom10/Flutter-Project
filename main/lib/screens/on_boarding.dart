@@ -48,7 +48,7 @@ class _OnBoardingState extends State<OnBoarding> {
             ),
           ),
 
-          /// 🟣 dots indicator
+          /// indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(images.length, (index) {
