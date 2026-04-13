@@ -1,6 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:main/screens/Signup.dart';
+import 'package:main/screens/forgotPassword.dart';
+
+import '../util/AppDialog.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,14 +16,17 @@ class _LoginScreen extends State<LoginScreen> {
 
   TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
+  bool hiddePass = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text("Login Page"),
         centerTitle: true,
       ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(20),
@@ -54,29 +60,46 @@ class _LoginScreen extends State<LoginScreen> {
               SizedBox(height: 15,),
               TextField(
                 controller: password,
-                obscureText: true,
+                obscureText: hiddePass,
                 decoration: InputDecoration(
                   labelText: "Enter Your Password",
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock),
-                  suffixIcon: Icon(Icons.visibility_off),
+                  suffixIcon: TextButton(
+                    child: Icon(hiddePass ? Icons.visibility_off : Icons.visibility),
+                    onPressed: (){
+                      setState(() => hiddePass = !hiddePass);
+                    },
+                  ),
                 ),
               ),
               SizedBox(height: 15,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text("Forgot Password?", style: TextStyle(
-                    color: Colors.deepPurpleAccent,
-                    fontSize: 18,
-                  ),)
+                  TextButton(
+                    onPressed: (){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder:(context)=> ForgotPassword()),
+                      );
+                    },
+                    child: Text("Forgot Password?", style: TextStyle(
+                      color: Colors.deepPurpleAccent,
+                      fontSize: 18,
+                    ),),
+                  )
                 ],
               ),
               SizedBox(height: 15,),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    if(username.text == "" || password.text == "") {
+                      AppDialogs.showErrorDialog(context, 'Error', 'All Fields Are Required');
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurpleAccent,
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),

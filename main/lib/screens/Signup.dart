@@ -2,6 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:main/screens/Signup.dart';
 
+import '../util/AppDialog.dart';
+
 class Signup extends StatefulWidget {
   const Signup({super.key});
 
@@ -14,14 +16,17 @@ class _Signup extends State<Signup> {
   TextEditingController username = TextEditingController();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
+  bool hiddePass = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text("Signup Page"),
         centerTitle: true,
       ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(20),
@@ -64,19 +69,28 @@ class _Signup extends State<Signup> {
               SizedBox(height: 15,),
               TextField(
                 controller: password,
-                obscureText: true,
+                obscureText: hiddePass,
                 decoration: InputDecoration(
                   labelText: "Enter Your Password",
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock),
-                  suffixIcon: Icon(Icons.visibility_off),
+                  suffixIcon: TextButton(
+                    onPressed: () {
+                      setState(() => hiddePass = !hiddePass);
+                    },
+                    child: Icon(hiddePass ? Icons.visibility_off : Icons.visibility),
+                  ),
                 ),
               ),
               SizedBox(height: 15,),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    if(username.text == "" || email.text == "" || password.text == "") {
+                      AppDialogs.showErrorDialog(context, 'Error', 'All Fields Are Required');
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurpleAccent,
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
@@ -90,6 +104,7 @@ class _Signup extends State<Signup> {
                   ),),
                 ),
               ),
+              SizedBox(height: 10,),
               Row(
                 children: [
                   Expanded(
@@ -113,22 +128,35 @@ class _Signup extends State<Signup> {
                   ),
                 ],
               ),
+              SizedBox(height: 10,),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: (){},
-                  child: Text("Sing in with Google" , style: TextStyle(
-                    fontSize: 18,
-                  ),),
+                child: OutlinedButton.icon(
+                  onPressed: () {},
+                  icon: Image.network(
+                    'https://www.google.com/favicon.ico',
+                    width: 24,
+                    height: 24,
+                  ),
+                  label: Text(
+                    "Sign in with Google",
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
               ),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: (){},
-                  child: Text("Sing in with Facebook" , style: TextStyle(
-                    fontSize: 18,
-                  ),),
+                child: OutlinedButton.icon(
+                  onPressed: () {},
+                  icon: Image.network(
+                    'https://www.facebook.com/favicon.ico',
+                    width: 24,
+                    height: 24,
+                  ),
+                  label: Text(
+                    "Sign in with Facebook",
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
               ),
               SizedBox(

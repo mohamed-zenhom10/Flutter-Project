@@ -17,6 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Size size = MediaQuery.of(context).size;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(child: Image.asset("assets/app_icon.png" , width: size.width * 0.5,).animate(
         onComplete: (v) => {
           Navigator.push(context , CupertinoPageRoute(builder: (context) => OnBoarding())),

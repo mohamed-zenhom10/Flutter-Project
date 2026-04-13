@@ -26,6 +26,7 @@ class _OnBoardingState extends State<OnBoarding> {
     Size size = MediaQuery.of(context).size;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           Expanded(
