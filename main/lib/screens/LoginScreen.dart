@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:main/pages/home.dart';
 import 'package:main/screens/Signup.dart';
 import 'package:main/screens/forgotPassword.dart';
 
@@ -98,6 +99,11 @@ class _LoginScreen extends State<LoginScreen> {
                   onPressed: () {
                     if(username.text == "" || password.text == "") {
                       AppDialogs.showErrorDialog(context, 'Error', 'All Fields Are Required');
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomePage())
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
