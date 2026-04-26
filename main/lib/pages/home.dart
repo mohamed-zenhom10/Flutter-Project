@@ -5,6 +5,7 @@ import 'package:main/pages/popular_doctors.dart';
 import 'package:main/util/doctor.dart';
 import 'package:main/widgets/doctor_carousel.dart';
 import 'package:main/pages/my_appointments.dart';
+import 'package:main/pages/search_screen.dart';
 
 const Color primaryBlue = Color(0xFF2D81FF);
 
@@ -95,14 +96,27 @@ class _HomePage extends State<HomePage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: TextField(
-                        controller: searchValue,
-                        decoration: InputDecoration(
-                          hintText: "Search a doctor, specialty...",
-                          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                          prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      child: GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SearchScreen()),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              decoration: InputDecoration(
+                                hintText: "Search a doctor, specialty...",
+                                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                                prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),

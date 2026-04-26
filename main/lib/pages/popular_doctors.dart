@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:main/util/doctor.dart';
 import 'package:main/pages/book_appointment.dart';
+import 'package:main/pages/doctor_profile.dart';
 
 const Color primaryBlue = Color(0xFF2D81FF);
 
@@ -118,10 +119,15 @@ class _PopularDoctors extends State<PopularDoctors> {
                   itemCount: doctors.length,
                   itemBuilder: (context, index) {
                     final doctor = doctors[index];
-                    return Container(
-                      margin: EdgeInsets.only(bottom: 12),
-                      padding: EdgeInsets.all(15),
-                      decoration: BoxDecoration(
+                    return GestureDetector(
+                        onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DoctorProfile(doctor: doctor)),
+                    ),
+                    child: Container(
+                    margin: EdgeInsets.only(bottom: 12),
+                    padding: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 8, spreadRadius: 2)],
@@ -178,6 +184,7 @@ class _PopularDoctors extends State<PopularDoctors> {
                           ),
                         ],
                       ),
+                    ),
                     );
                   },
                 );
