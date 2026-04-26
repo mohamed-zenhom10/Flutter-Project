@@ -4,9 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:main/util/doctor.dart';
 import 'package:main/util/AppDialog.dart';
 
+const Color primaryBlue = Color(0xFF2D81FF);
+
 class BookAppointment extends StatefulWidget {
   final Doctor doctor;
-
   const BookAppointment({super.key, required this.doctor});
 
   @override
@@ -32,6 +33,14 @@ class _BookAppointment extends State<BookAppointment> {
       initialDate: DateTime.now().add(Duration(days: 1)),
       firstDate: DateTime.now().add(Duration(days: 1)),
       lastDate: DateTime.now().add(Duration(days: 30)),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(primary: primaryBlue),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       setState(() {
@@ -46,14 +55,12 @@ class _BookAppointment extends State<BookAppointment> {
   Future<void> fetchBookedSlots(DateTime date) async {
     final startOfDay = DateTime(date.year, date.month, date.day);
     final endOfDay = startOfDay.add(Duration(days: 1));
-
     final snapshot = await FirebaseFirestore.instance
         .collection('appointments')
         .where('doctorId', isEqualTo: widget.doctor.id)
         .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
         .where('date', isLessThan: Timestamp.fromDate(endOfDay))
         .get();
-
     setState(() {
       bookedSlots = snapshot.docs.map((doc) => doc['time'] as String).toList();
     });
@@ -68,20 +75,15 @@ class _BookAppointment extends State<BookAppointment> {
       AppDialogs.showErrorDialog(context, 'Error', 'Please select a time slot');
       return;
     }
-
     setState(() => isLoading = true);
-
     try {
       final user = FirebaseAuth.instance.currentUser;
-
-      // Double check slot is still available
       await fetchBookedSlots(selectedDate!);
       if (bookedSlots.contains(selectedTime)) {
         setState(() => isLoading = false);
         AppDialogs.showErrorDialog(context, 'Error', 'This slot was just booked! Please choose another.');
         return;
       }
-
       await FirebaseFirestore.instance.collection('appointments').add({
         'userId': user!.uid,
         'doctorId': widget.doctor.id,
@@ -93,10 +95,8 @@ class _BookAppointment extends State<BookAppointment> {
         'status': 'pending',
         'createdAt': Timestamp.now(),
       });
-
       setState(() => isLoading = false);
       AppDialogs.showErrorDialog(context, 'Success', 'Appointment booked successfully!');
-
     } catch (e) {
       setState(() => isLoading = false);
       AppDialogs.showErrorDialog(context, 'Error', 'Failed to book appointment. Try again.');
@@ -106,164 +106,196 @@ class _BookAppointment extends State<BookAppointment> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text("Book Appointment"),
-        centerTitle: true,
-      ),
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Doctor info card
-              Container(
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: Colors.deepPurpleAccent.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
+      backgroundColor: Color(0xFFF5F6FA),
+      body: Column(
+        children: [
+          // Blue header with doctor info
+          Container(
+            padding: EdgeInsets.fromLTRB(20, 60, 20, 25),
+            decoration: BoxDecoration(
+              color: primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundImage: AssetImage(widget.doctor.image),
+                    IconButton(
+                      icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                    SizedBox(width: 15),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.doctor.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                        Text(widget.doctor.specialization, style: TextStyle(color: Colors.grey)),
-                        Text(widget.doctor.hospital, style: TextStyle(color: Colors.grey, fontSize: 12)),
-                        Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Text(' ${widget.doctor.rate}', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ],
+                    Expanded(
+                      child: Text("Book Appointment",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                     ),
+                    SizedBox(width: 48),
                   ],
                 ),
-              ),
-
-              SizedBox(height: 25),
-
-              // Date picker
-              Text("Select Date", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: 10),
-              GestureDetector(
-                onTap: pickDate,
-                child: Container(
-                  width: double.infinity,
+                SizedBox(height: 20),
+                // Doctor card
+                Container(
                   padding: EdgeInsets.all(15),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.calendar_today, color: Colors.deepPurpleAccent),
-                      SizedBox(width: 10),
-                      Text(
-                        selectedDate == null
-                            ? 'Choose a date'
-                            : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                        style: TextStyle(fontSize: 16, color: selectedDate == null ? Colors.grey : Colors.black),
+                      CircleAvatar(
+                        radius: 35,
+                        backgroundImage: AssetImage(widget.doctor.image),
+                      ),
+                      SizedBox(width: 15),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(widget.doctor.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+                            Text(widget.doctor.specialization, style: TextStyle(color: Colors.white70, fontSize: 14)),
+                            Text(widget.doctor.hospital, style: TextStyle(color: Colors.white60, fontSize: 12)),
+                            SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.star, color: Colors.amber, size: 16),
+                                Text(' ${widget.doctor.rate}', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                SizedBox(width: 10),
+                                Icon(Icons.work_outline, color: Colors.white70, size: 14),
+                                Text(' ${widget.doctor.experience} yrs', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
+              ],
+            ),
+          ),
 
-              SizedBox(height: 25),
-
-              // Time slots
-              Text("Select Time", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: 5),
-              if (selectedDate != null)
-                Row(
-                  children: [
-                    Container(width: 12, height: 12, color: Colors.red.shade200),
-                    SizedBox(width: 5),
-                    Text("Already booked", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    SizedBox(width: 15),
-                    Container(width: 12, height: 12, color: Colors.deepPurpleAccent),
-                    SizedBox(width: 5),
-                    Text("Selected", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  ],
-                ),
-              SizedBox(height: 10),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 2.2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemCount: timeSlots.length,
-                itemBuilder: (context, index) {
-                  final isSelected = selectedTime == timeSlots[index];
-                  final isBooked = bookedSlots.contains(timeSlots[index]);
-
-                  return GestureDetector(
-                    onTap: isBooked ? null : () => setState(() => selectedTime = timeSlots[index]),
+          // Scrollable content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Date picker
+                  Text("Select Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: pickDate,
                     child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isBooked
-                            ? Colors.red.shade200
-                            : isSelected
-                            ? Colors.deepPurpleAccent
-                            : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isBooked
-                              ? Colors.red.shade300
-                              : isSelected
-                              ? Colors.deepPurpleAccent
-                              : Colors.grey.shade300,
-                        ),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 5, spreadRadius: 1)],
                       ),
-                      child: Center(
-                        child: Text(
-                          timeSlots[index],
-                          style: TextStyle(
-                            color: isBooked ? Colors.white : isSelected ? Colors.white : Colors.black,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(color: primaryBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                            child: Icon(Icons.calendar_today, color: primaryBlue, size: 20),
                           ),
-                        ),
+                          SizedBox(width: 12),
+                          Text(
+                            selectedDate == null ? 'Choose a date' : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+                            style: TextStyle(fontSize: 15, color: selectedDate == null ? Colors.grey : Colors.black87, fontWeight: FontWeight.w500),
+                          ),
+                          Spacer(),
+                          Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 14),
+                        ],
                       ),
                     ),
-                  );
-                },
-              ),
-
-              SizedBox(height: 30),
-
-              // Book button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : bookAppointment,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurpleAccent,
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : Text("Confirm Booking", style: TextStyle(color: Colors.white, fontSize: 18)),
-                ),
+
+                  SizedBox(height: 24),
+
+                  // Time slots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Select Time", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      if (selectedDate != null)
+                        Row(
+                          children: [
+                            Container(width: 10, height: 10, decoration: BoxDecoration(color: Colors.red.shade300, borderRadius: BorderRadius.circular(2))),
+                            SizedBox(width: 4),
+                            Text("Booked", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          ],
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      childAspectRatio: 2.2,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                    ),
+                    itemCount: timeSlots.length,
+                    itemBuilder: (context, index) {
+                      final isSelected = selectedTime == timeSlots[index];
+                      final isBooked = bookedSlots.contains(timeSlots[index]);
+                      return GestureDetector(
+                        onTap: isBooked ? null : () => setState(() => selectedTime = timeSlots[index]),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isBooked ? Colors.red.shade100 : isSelected ? primaryBlue : Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isBooked ? Colors.red.shade300 : isSelected ? primaryBlue : Colors.grey.shade200,
+                            ),
+                            boxShadow: isSelected ? [BoxShadow(color: primaryBlue.withOpacity(0.3), blurRadius: 6)] : [],
+                          ),
+                          child: Center(
+                            child: Text(
+                              timeSlots[index],
+                              style: TextStyle(
+                                color: isBooked ? Colors.red.shade700 : isSelected ? Colors.white : Colors.black87,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  SizedBox(height: 30),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : bookAppointment,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryBlue,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text("Confirm Booking", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
