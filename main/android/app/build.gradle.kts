@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.main"
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -29,6 +29,8 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = false
+            isShrinkResources = false
             signingConfig = signingConfigs.getByName("debug")
         }
     }

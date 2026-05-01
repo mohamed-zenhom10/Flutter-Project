@@ -6,6 +6,10 @@ class Doctor {
   final String specialization;
   final int experience;
   final String hospital;
+  final int fee;
+  final String address;
+  final double latitude;
+  final double longitude;
 
   const Doctor({
     required this.id,
@@ -15,6 +19,10 @@ class Doctor {
     required this.specialization,
     required this.experience,
     required this.hospital,
+    required this.fee,
+    required this.address,
+    required this.latitude,
+    required this.longitude,
   });
 
   factory Doctor.fromFirestore(Map<String, dynamic> data, String id) {
@@ -26,6 +34,10 @@ class Doctor {
       specialization: data['specialization'] ?? '',
       experience: data['experience'] ?? 0,
       hospital: data['hospital'] ?? '',
+      fee: (data['fee'] ?? 0).toInt(),
+      address: data['address'] ?? '',
+      latitude: (data['latitude'] ?? 0).toDouble(),
+      longitude: (data['longitude'] ?? 0).toDouble(),
     );
   }
 }
