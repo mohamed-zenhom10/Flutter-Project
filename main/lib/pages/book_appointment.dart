@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:main/util/doctor.dart';
 import 'package:main/util/AppDialog.dart';
+import 'package:main/pages/booking_confirmation.dart';
+import 'dart:math';
+import 'package:main/widgets/doctor_carousel.dart';
+
 
 const Color primaryBlue = Color(0xFF2D81FF);
 
@@ -84,8 +88,7 @@ class _BookAppointment extends State<BookAppointment> {
         AppDialogs.showErrorDialog(context, 'Error', 'This slot was just booked! Please choose another.');
         return;
       }
-      await FirebaseFirestore.instance.collection('appointments').add({
-        'userId': user!.uid,
+      final appointmentRef = await FirebaseFirestore.instance.collection('appointments').add({'userId': user!.uid,
         'doctorId': widget.doctor.id,
         'doctorName': widget.doctor.name,
         'specialization': widget.doctor.specialization,
@@ -96,7 +99,23 @@ class _BookAppointment extends State<BookAppointment> {
         'createdAt': Timestamp.now(),
       });
       setState(() => isLoading = false);
-      AppDialogs.showErrorDialog(context, 'Success', 'Appointment booked successfully!');
+      String code = (100000 + Random().nextInt(900000)).toString();
+
+      await FirebaseFirestore.instance.collection('appointments')
+          .doc(appointmentRef.id)
+          .update({'confirmationCode': code});
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BookingConfirmation(
+            doctor: widget.doctor,
+            date: '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+            time: selectedTime!,
+            confirmationCode: code,
+          ),
+        ),
+      );
     } catch (e) {
       setState(() => isLoading = false);
       AppDialogs.showErrorDialog(context, 'Error', 'Failed to book appointment. Try again.');
@@ -148,7 +167,12 @@ class _BookAppointment extends State<BookAppointment> {
                     children: [
                       CircleAvatar(
                         radius: 35,
-                        backgroundImage: AssetImage(widget.doctor.image),
+                        backgroundColor: isFemaleDoctor(widget.doctor.name) ? Colors.pink.shade50 : Colors.blue.shade50,
+                        child: Icon(
+                          isFemaleDoctor(widget.doctor.name) ? Icons.face_3 : Icons.face,
+                          size: 35,
+                          color: isFemaleDoctor(widget.doctor.name) ? Colors.pink : primaryBlue,
+                        ),
                       ),
                       SizedBox(width: 15),
                       Expanded(

@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:main/util/doctor.dart';
 import 'package:main/pages/book_appointment.dart';
 import 'package:main/pages/doctor_profile.dart';
+import 'package:main/widgets/doctor_carousel.dart';
+import 'package:main/widgets/doctor_carousel.dart';
 
 const Color primaryBlue = Color(0xFF2D81FF);
 
@@ -44,7 +46,6 @@ class _PopularDoctors extends State<PopularDoctors> {
       ),
       body: Column(
         children: [
-          // Blue header with specialty filters
           Container(
             color: primaryBlue,
             child: Column(
@@ -93,7 +94,6 @@ class _PopularDoctors extends State<PopularDoctors> {
             ),
           ),
 
-          // Doctors list
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: selectedSpecialty == 'All'
@@ -120,71 +120,68 @@ class _PopularDoctors extends State<PopularDoctors> {
                   itemBuilder: (context, index) {
                     final doctor = doctors[index];
                     return GestureDetector(
-                        onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => DoctorProfile(doctor: doctor)),
-                    ),
-                    child: Container(
-                    margin: EdgeInsets.only(bottom: 12),
-                    padding: EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 8, spreadRadius: 2)],
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => DoctorProfile(doctor: doctor)),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: primaryBlue.withOpacity(0.2), width: 2),
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 12),
+                        padding: EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 8, spreadRadius: 2)],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: primaryBlue.withOpacity(0.2), width: 2),
+                              ),
+                              child: doctorAvatar(doctor.name, 35),
                             ),
-                            child: CircleAvatar(
-                              radius: 35,
-                              backgroundImage: AssetImage(doctor.image),
+                            SizedBox(width: 15),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(doctor.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
+                                  SizedBox(height: 3),
+                                  Text(doctor.specialization, style: TextStyle(color: primaryBlue, fontSize: 13, fontWeight: FontWeight.w500)),
+                                  Text(doctor.hospital, style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                  SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.star, color: Colors.amber, size: 15),
+                                      Text(' ${doctor.rate}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                      SizedBox(width: 10),
+                                      Icon(Icons.work_outline, color: Colors.grey, size: 13),
+                                      Text(' ${doctor.experience} yrs', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 15),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(doctor.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-                                SizedBox(height: 3),
-                                Text(doctor.specialization, style: TextStyle(color: primaryBlue, fontSize: 13, fontWeight: FontWeight.w500)),
-                                Text(doctor.hospital, style: TextStyle(color: Colors.grey, fontSize: 12)),
-                                SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Icon(Icons.star, color: Colors.amber, size: 15),
-                                    Text(' ${doctor.rate}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                                    SizedBox(width: 10),
-                                    Icon(Icons.work_outline, color: Colors.grey, size: 13),
-                                    Text(' ${doctor.experience} yrs', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                                  ],
+                            SizedBox(
+                              width: 70,
+                              child: ElevatedButton(
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => BookAppointment(doctor: doctor)),
                                 ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            width: 70,
-                            child: ElevatedButton(
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => BookAppointment(doctor: doctor)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryBlue,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                  elevation: 0,
+                                ),
+                                child: Text("Book", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                               ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: primaryBlue,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                padding: EdgeInsets.symmetric(vertical: 10),
-                                elevation: 0,
-                              ),
-                              child: Text("Book", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                     );
                   },
                 );

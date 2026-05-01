@@ -5,6 +5,25 @@ import '../util/doctor.dart';
 
 const Color primaryBlue = Color(0xFF2D81FF);
 
+bool isFemaleDoctor(String name) {
+  final femaleNames = ['sarah', 'emily', 'lisa', 'maria', 'nadia', 'mona', 'heba', 'yasmin', 'dina', 'noha', 'rania', 'amira', 'salma', 'rana', 'mariam', 'ghada'];
+  final firstName = name.toLowerCase().replaceAll('dr. ', '').split(' ')[0];
+  return femaleNames.contains(firstName);
+}
+
+Widget doctorAvatar(String name, double radius) {
+  final female = isFemaleDoctor(name);
+  return CircleAvatar(
+    radius: radius,
+    backgroundColor: female ? Colors.pink.shade50 : Colors.blue.shade50,
+    child: Icon(
+      female ? Icons.face_3 : Icons.face,
+      size: radius,
+      color: female ? Colors.pink : primaryBlue,
+    ),
+  );
+}
+
 class DoctorCarousel extends StatelessWidget {
   final List<Doctor> allDoctors;
 
@@ -17,44 +36,82 @@ class DoctorCarousel extends StatelessWidget {
     final top5Doctors = topDoctors.take(5).toList();
 
     return CarouselSlider(
-      options: CarouselOptions(height: 220, autoPlay: false, enlargeCenterPage: true),
+      options: CarouselOptions(height: 280, autoPlay: false, enlargeCenterPage: true),
       items: top5Doctors.map((doctor) => _buildDoctorCard(context, doctor)).toList(),
     );
   }
 
   Widget _buildDoctorCard(BuildContext context, Doctor doctor) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => DoctorProfile(doctor: doctor)),
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 10, spreadRadius: 2)],
       ),
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 5),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 8, spreadRadius: 2)],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage(doctor.image),
-            ),
-            SizedBox(height: 10),
-            Text(doctor.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            Text(doctor.specialization, style: TextStyle(color: primaryBlue, fontSize: 13)),
-            SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          doctorAvatar(doctor.name, 45),
+          SizedBox(height: 10),
+          Text(
+            doctor.name,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 4),
+          Text(
+            doctor.specialization,
+            style: TextStyle(color: primaryBlue, fontSize: 13, fontWeight: FontWeight.w500),
+          ),
+          SizedBox(height: 8),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.star, color: Colors.amber, size: 16),
-                Text(' ${doctor.rate}', style: TextStyle(fontWeight: FontWeight.bold)),
+                Row(
+                  children: [
+                    Icon(Icons.star, color: Colors.amber, size: 16),
+                    SizedBox(width: 3),
+                    Text('${doctor.rate}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  ],
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: primaryBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'EGP ${doctor.fee}',
+                    style: TextStyle(color: primaryBlue, fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+          SizedBox(height: 10),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 36,
+              child: ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DoctorProfile(doctor: doctor)),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryBlue,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+                child: Text("View Profile", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
