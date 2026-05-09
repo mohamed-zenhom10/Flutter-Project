@@ -7,7 +7,6 @@ import 'package:main/pages/booking_confirmation.dart';
 import 'dart:math';
 import 'package:main/widgets/doctor_carousel.dart';
 
-
 const Color primaryBlue = Color(0xFF2D81FF);
 
 class BookAppointment extends StatefulWidget {
@@ -25,18 +24,67 @@ class _BookAppointment extends State<BookAppointment> {
   List<String> bookedSlots = [];
 
   final List<String> timeSlots = [
-    '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
-    '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM',
-    '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM',
-    '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM',
+    '9:00 AM',
+    '9:30 AM',
+    '10:00 AM',
+    '10:30 AM',
+    '11:00 AM',
+    '11:30 AM',
+    '12:00 PM',
+    '12:30 PM',
+    '1:00 PM',
+    '1:30 PM',
+    '2:00 PM',
+    '2:30 PM',
+    '3:00 PM',
+    '3:30 PM',
+    '4:00 PM',
+    '4:30 PM',
   ];
 
   Future<void> pickDate() async {
+    List<DateTime> offDays = [];
+
+    try {
+      final offDaysSnapshot = await FirebaseFirestore.instance
+          .collection('off_days')
+          .where('doctorId', isEqualTo: widget.doctor.id)
+          .get();
+
+      offDays = offDaysSnapshot.docs.map((doc) {
+        final timestamp = doc['date'] as Timestamp;
+        final d = timestamp.toDate();
+        return DateTime(d.year, d.month, d.day);
+      }).toList();
+    } catch (e) {
+      print('Error: $e');
+    }
+
+    // Find next available date that's not an off day
+    DateTime initialDate = DateTime.now().add(Duration(days: 1));
+    while (offDays.any(
+      (offDay) =>
+          offDay.year == initialDate.year &&
+          offDay.month == initialDate.month &&
+          offDay.day == initialDate.day,
+    )) {
+      initialDate = initialDate.add(Duration(days: 1));
+    }
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().add(Duration(days: 1)),
+      initialDate: initialDate,
       firstDate: DateTime.now().add(Duration(days: 1)),
       lastDate: DateTime.now().add(Duration(days: 30)),
+      selectableDayPredicate: (DateTime day) {
+        final d = DateTime(day.year, day.month, day.day);
+        return !offDays.any(
+          (offDay) =>
+              offDay.year == d.year &&
+              offDay.month == d.month &&
+              offDay.day == d.day,
+        );
+      },
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -46,6 +94,7 @@ class _BookAppointment extends State<BookAppointment> {
         );
       },
     );
+
     if (picked != null) {
       setState(() {
         selectedDate = picked;
@@ -85,23 +134,31 @@ class _BookAppointment extends State<BookAppointment> {
       await fetchBookedSlots(selectedDate!);
       if (bookedSlots.contains(selectedTime)) {
         setState(() => isLoading = false);
-        AppDialogs.showErrorDialog(context, 'Error', 'This slot was just booked! Please choose another.');
+        AppDialogs.showErrorDialog(
+          context,
+          'Error',
+          'This slot was just booked! Please choose another.',
+        );
         return;
       }
-      final appointmentRef = await FirebaseFirestore.instance.collection('appointments').add({'userId': user!.uid,
-        'doctorId': widget.doctor.id,
-        'doctorName': widget.doctor.name,
-        'specialization': widget.doctor.specialization,
-        'hospital': widget.doctor.hospital,
-        'date': Timestamp.fromDate(selectedDate!),
-        'time': selectedTime,
-        'status': 'pending',
-        'createdAt': Timestamp.now(),
-      });
+      final appointmentRef = await FirebaseFirestore.instance
+          .collection('appointments')
+          .add({
+            'userId': user!.uid,
+            'doctorId': widget.doctor.id,
+            'doctorName': widget.doctor.name,
+            'specialization': widget.doctor.specialization,
+            'hospital': widget.doctor.hospital,
+            'date': Timestamp.fromDate(selectedDate!),
+            'time': selectedTime,
+            'status': 'pending',
+            'createdAt': Timestamp.now(),
+          });
       setState(() => isLoading = false);
       String code = (100000 + Random().nextInt(900000)).toString();
 
-      await FirebaseFirestore.instance.collection('appointments')
+      await FirebaseFirestore.instance
+          .collection('appointments')
           .doc(appointmentRef.id)
           .update({'confirmationCode': code});
 
@@ -110,7 +167,8 @@ class _BookAppointment extends State<BookAppointment> {
         MaterialPageRoute(
           builder: (context) => BookingConfirmation(
             doctor: widget.doctor,
-            date: '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+            date:
+                '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
             time: selectedTime!,
             confirmationCode: code,
           ),
@@ -118,7 +176,11 @@ class _BookAppointment extends State<BookAppointment> {
       );
     } catch (e) {
       setState(() => isLoading = false);
-      AppDialogs.showErrorDialog(context, 'Error', 'Failed to book appointment. Try again.');
+      AppDialogs.showErrorDialog(
+        context,
+        'Error',
+        'Failed to book appointment. Try again.',
+      );
     }
   }
 
@@ -147,9 +209,14 @@ class _BookAppointment extends State<BookAppointment> {
                       onPressed: () => Navigator.pop(context),
                     ),
                     Expanded(
-                      child: Text("Book Appointment",
+                      child: Text(
+                        "Book Appointment",
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     SizedBox(width: 48),
@@ -167,11 +234,17 @@ class _BookAppointment extends State<BookAppointment> {
                     children: [
                       CircleAvatar(
                         radius: 35,
-                        backgroundColor: isFemaleDoctor(widget.doctor.name) ? Colors.pink.shade50 : Colors.blue.shade50,
+                        backgroundColor: isFemaleDoctor(widget.doctor.name)
+                            ? Colors.pink.shade50
+                            : Colors.blue.shade50,
                         child: Icon(
-                          isFemaleDoctor(widget.doctor.name) ? Icons.face_3 : Icons.face,
+                          isFemaleDoctor(widget.doctor.name)
+                              ? Icons.face_3
+                              : Icons.face,
                           size: 35,
-                          color: isFemaleDoctor(widget.doctor.name) ? Colors.pink : primaryBlue,
+                          color: isFemaleDoctor(widget.doctor.name)
+                              ? Colors.pink
+                              : primaryBlue,
                         ),
                       ),
                       SizedBox(width: 15),
@@ -179,17 +252,52 @@ class _BookAppointment extends State<BookAppointment> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(widget.doctor.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
-                            Text(widget.doctor.specialization, style: TextStyle(color: Colors.white70, fontSize: 14)),
-                            Text(widget.doctor.hospital, style: TextStyle(color: Colors.white60, fontSize: 12)),
+                            Text(
+                              widget.doctor.name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              widget.doctor.specialization,
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              widget.doctor.hospital,
+                              style: TextStyle(
+                                color: Colors.white60,
+                                fontSize: 12,
+                              ),
+                            ),
                             SizedBox(height: 4),
                             Row(
                               children: [
                                 Icon(Icons.star, color: Colors.amber, size: 16),
-                                Text(' ${widget.doctor.rate}', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                Text(
+                                  ' ${widget.doctor.rate}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 SizedBox(width: 10),
-                                Icon(Icons.work_outline, color: Colors.white70, size: 14),
-                                Text(' ${widget.doctor.experience} yrs', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                Icon(
+                                  Icons.work_outline,
+                                  color: Colors.white70,
+                                  size: 14,
+                                ),
+                                Text(
+                                  ' ${widget.doctor.experience} yrs',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -210,7 +318,14 @@ class _BookAppointment extends State<BookAppointment> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Date picker
-                  Text("Select Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  Text(
+                    "Select Date",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
                   SizedBox(height: 10),
                   GestureDetector(
                     onTap: pickDate,
@@ -220,22 +335,47 @@ class _BookAppointment extends State<BookAppointment> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 5, spreadRadius: 1)],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.shade200,
+                            blurRadius: 5,
+                            spreadRadius: 1,
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
                           Container(
                             padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: primaryBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                            child: Icon(Icons.calendar_today, color: primaryBlue, size: 20),
+                            decoration: BoxDecoration(
+                              color: primaryBlue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.calendar_today,
+                              color: primaryBlue,
+                              size: 20,
+                            ),
                           ),
                           SizedBox(width: 12),
                           Text(
-                            selectedDate == null ? 'Choose a date' : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                            style: TextStyle(fontSize: 15, color: selectedDate == null ? Colors.grey : Colors.black87, fontWeight: FontWeight.w500),
+                            selectedDate == null
+                                ? 'Choose a date'
+                                : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: selectedDate == null
+                                  ? Colors.grey
+                                  : Colors.black87,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           Spacer(),
-                          Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 14),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.grey,
+                            size: 14,
+                          ),
                         ],
                       ),
                     ),
@@ -247,13 +387,33 @@ class _BookAppointment extends State<BookAppointment> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Select Time", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      Text(
+                        "Select Time",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
                       if (selectedDate != null)
                         Row(
                           children: [
-                            Container(width: 10, height: 10, decoration: BoxDecoration(color: Colors.red.shade300, borderRadius: BorderRadius.circular(2))),
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade300,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
                             SizedBox(width: 4),
-                            Text("Booked", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                            Text(
+                              "Booked",
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey,
+                              ),
+                            ),
                           ],
                         ),
                     ],
@@ -273,21 +433,44 @@ class _BookAppointment extends State<BookAppointment> {
                       final isSelected = selectedTime == timeSlots[index];
                       final isBooked = bookedSlots.contains(timeSlots[index]);
                       return GestureDetector(
-                        onTap: isBooked ? null : () => setState(() => selectedTime = timeSlots[index]),
+                        onTap: isBooked
+                            ? null
+                            : () => setState(
+                                () => selectedTime = timeSlots[index],
+                              ),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isBooked ? Colors.red.shade100 : isSelected ? primaryBlue : Colors.white,
+                            color: isBooked
+                                ? Colors.red.shade100
+                                : isSelected
+                                ? primaryBlue
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isBooked ? Colors.red.shade300 : isSelected ? primaryBlue : Colors.grey.shade200,
+                              color: isBooked
+                                  ? Colors.red.shade300
+                                  : isSelected
+                                  ? primaryBlue
+                                  : Colors.grey.shade200,
                             ),
-                            boxShadow: isSelected ? [BoxShadow(color: primaryBlue.withOpacity(0.3), blurRadius: 6)] : [],
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: primaryBlue.withOpacity(0.3),
+                                      blurRadius: 6,
+                                    ),
+                                  ]
+                                : [],
                           ),
                           child: Center(
                             child: Text(
                               timeSlots[index],
                               style: TextStyle(
-                                color: isBooked ? Colors.red.shade700 : isSelected ? Colors.white : Colors.black87,
+                                color: isBooked
+                                    ? Colors.red.shade700
+                                    : isSelected
+                                    ? Colors.white
+                                    : Colors.black87,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -307,12 +490,21 @@ class _BookAppointment extends State<BookAppointment> {
                       onPressed: isLoading ? null : bookAppointment,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryBlue,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
                       child: isLoading
                           ? CircularProgressIndicator(color: Colors.white)
-                          : Text("Confirm Booking", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                          : Text(
+                              "Confirm Booking",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ],

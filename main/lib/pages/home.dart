@@ -21,18 +21,26 @@ class HomePage extends StatefulWidget {
 class _HomePage extends State<HomePage> {
   int currentIndex = 0;
 
-  final List<Widget> pages = [
-    HomeTab(),
-    PopularDoctors(),
-    MyAppointments(),
-    ProfileScreen(),
-  ];
+  Widget _buildPage(int index) {
+    switch (index) {
+      case 0:
+        return HomeTab();
+      case 1:
+        return PopularDoctors();
+      case 2:
+        return MyAppointments();
+      case 3:
+        return ProfileScreen();
+      default:
+        return HomeTab();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFF5F6FA),
-      body: pages[currentIndex],
+      body: _buildPage(currentIndex),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
