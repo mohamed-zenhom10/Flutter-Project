@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:main/main.dart';
 import 'package:main/pages/home.dart';
 import 'package:main/screens/Signup.dart';
 import 'package:main/screens/forgotPassword.dart';
@@ -33,9 +34,10 @@ class _LoginScreen extends State<LoginScreen> {
         password: password.text.trim(),
       );
       setState(() => isLoading = false);
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => const AuthWrapper()),
+        (route) => false,
       );
     } on FirebaseAuthException catch (e) {
       setState(() => isLoading = false);

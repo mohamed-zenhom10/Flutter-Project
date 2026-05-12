@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:main/util/doctor.dart';
 import 'package:main/pages/doctor_profile.dart';
 import 'package:main/pages/book_appointment.dart';
+import 'package:main/widgets/doctor_carousel.dart';
 
 const Color primaryBlue = Color(0xFF2D81FF);
 
@@ -165,10 +166,7 @@ class _SearchScreen extends State<SearchScreen> {
                             shape: BoxShape.circle,
                             border: Border.all(color: primaryBlue.withOpacity(0.2), width: 2),
                           ),
-                          child: CircleAvatar(
-                            radius: 30,
-                            backgroundImage: AssetImage(doctor.image),
-                          ),
+                          child: doctorAvatar(doctor.name, 30),
                         ),
                         SizedBox(width: 15),
                         Expanded(

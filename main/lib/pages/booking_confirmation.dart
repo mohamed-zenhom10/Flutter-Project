@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:main/util/doctor.dart';
-import 'package:main/pages/home.dart';
+import 'package:main/main.dart';
+import 'package:main/widgets/doctor_carousel.dart';
 
 const Color primaryBlue = Color(0xFF2D81FF);
 
@@ -130,10 +131,7 @@ class BookingConfirmation extends StatelessWidget {
                     // Doctor info
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundImage: AssetImage(doctor.image),
-                        ),
+                        doctorAvatar(doctor.name, 30),
                         SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +167,7 @@ class BookingConfirmation extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
+                    MaterialPageRoute(builder: (context) => const AuthWrapper()),
                         (route) => false,
                   ),
                   style: ElevatedButton.styleFrom(

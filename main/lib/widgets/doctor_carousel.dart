@@ -52,19 +52,23 @@ class DoctorCarousel extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          doctorAvatar(doctor.name, 45),
-          SizedBox(height: 10),
+          doctorAvatar(doctor.name, 42),
+          SizedBox(height: 8),
           Text(
             doctor.name,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 2),
           Text(
             doctor.specialization,
             style: TextStyle(color: primaryBlue, fontSize: 13, fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 8),
+          SizedBox(height: 6),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -91,12 +95,12 @@ class DoctorCarousel extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 8),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: SizedBox(
               width: double.infinity,
-              height: 36,
+              height: 34,
               child: ElevatedButton(
                 onPressed: () => Navigator.push(
                   context,
